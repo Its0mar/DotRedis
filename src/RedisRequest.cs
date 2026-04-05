@@ -1,4 +1,3 @@
-using System.Dynamic;
 using System.Text;
 
 public class RedisRequest

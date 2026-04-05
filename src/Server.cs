@@ -5,7 +5,7 @@ using System.Text;
 
 Console.WriteLine("Logs from your program will appear here!");
 
-ConcurrentDictionary<string, string> store = [];
+ConcurrentDictionary<string, StoredValue> store = [];
 
 TcpListener server = new TcpListener(IPAddress.Any, 6379);
 server.Start();
@@ -45,7 +45,25 @@ void HandleSocket(Socket client)
 
                 else if (req.Command == "SET")
                 {
-                    store[req.Arguments[0]] = req.Arguments[1];
+                    var storedValue = new StoredValue {Value = req.Arguments[1]};
+
+                    if (req.Arguments.Count > 2)
+                    {
+                        long.TryParse(req.Arguments[3], out var expiryLength);
+                        if (req.Arguments[2].ToUpper() == "PX")
+                        {
+                            var expiry = DateTime.UtcNow.AddMilliseconds(expiryLength);
+                            storedValue.Expiry = expiry;
+                        }
+
+                        else if (req.Arguments[2].ToUpper() == "EX")
+                        {
+                            var expiry = DateTime.UtcNow.AddSeconds(expiryLength);
+                            storedValue.Expiry = expiry;
+                        }    
+                    }
+
+                    store[req.Arguments[0]] = storedValue;
                     string response = $"+OK\r\n";
                     client.Send(Encoding.UTF8.GetBytes(response));
                 }
@@ -54,10 +72,19 @@ void HandleSocket(Socket client)
                 {
                     string key = req.Arguments[0];
 
-                    if (store.TryGetValue(key, out string? value))
+                    if (store.TryGetValue(key, out StoredValue value))
                     {
-                        string response = $"${value.Length}\r\n{value}\r\n";
-                        client.Send(Encoding.UTF8.GetBytes(response));
+                        if (value.Expiry is DateTime expiry && DateTime.UtcNow >= expiry)
+                        {
+                            store.TryRemove(key, out value);
+                            client.Send(Encoding.UTF8.GetBytes("$-1\r\n"));
+                        } 
+                        else
+                        {
+                            string response = $"${value.Value.Length}\r\n{value.Value}\r\n";
+                            client.Send(Encoding.UTF8.GetBytes(response));
+                        }
+                        
                     }
 
                     else
@@ -66,7 +93,7 @@ void HandleSocket(Socket client)
                     }
                 }
             }
-            
+
             catch (SocketException)
             {
                 break;
