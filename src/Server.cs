@@ -10,7 +10,9 @@ server.Start();
 
 while (true)
 {
-    Socket client = server.AcceptSocket(); // wait for client
+    Console.WriteLine("--> Waiting for a NEW client..."); 
+    Socket client = server.AcceptSocket(); 
+    Console.WriteLine("--> Client connected! Starting Task...");
     _ = Task.Run(() => HandleSocket(client));
 }
 
@@ -25,7 +27,19 @@ void HandleSocket(Socket client)
                 var buffer = new byte[1024];
                 int bytesRead = client.Receive(buffer);
                 if (bytesRead == 0) break;
-                client.Send(Encoding.UTF8.GetBytes("+PONG\r\n"));
+                // Console.WriteLine($"[DEBUG] Raw bytes received");
+                var req = new RedisRequest(buffer, bytesRead);
+                if (req.Command.ToUpper() == "PING")
+                {
+                    client.Send(Encoding.UTF8.GetBytes("+PONG\r\n"));
+                }
+                else if (req.Command.ToUpper() == "ECHO")
+                {
+                    string echoVal = req.Arguments[0];
+                    string response = $"${echoVal.Length}\r\n{echoVal}\r\n";
+                    client.Send(Encoding.UTF8.GetBytes(response));
+                }
+                // Console.WriteLine($"command is {req.Command}");
             }
             catch (SocketException)
             {
