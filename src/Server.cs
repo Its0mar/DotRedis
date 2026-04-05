@@ -1,18 +1,18 @@
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
 Console.WriteLine("Logs from your program will appear here!");
 
+ConcurrentDictionary<string, string> store = [];
 
 TcpListener server = new TcpListener(IPAddress.Any, 6379);
 server.Start();
 
 while (true)
 {
-    Console.WriteLine("--> Waiting for a NEW client..."); 
     Socket client = server.AcceptSocket(); 
-    Console.WriteLine("--> Client connected! Starting Task...");
     _ = Task.Run(() => HandleSocket(client));
 }
 
@@ -26,21 +26,47 @@ void HandleSocket(Socket client)
             {
                 var buffer = new byte[1024];
                 int bytesRead = client.Receive(buffer);
+
                 if (bytesRead == 0) break;
-                // Console.WriteLine($"[DEBUG] Raw bytes received");
+
                 var req = new RedisRequest(buffer, bytesRead);
-                if (req.Command.ToUpper() == "PING")
+
+                if (req.Command == "PING")
                 {
                     client.Send(Encoding.UTF8.GetBytes("+PONG\r\n"));
                 }
-                else if (req.Command.ToUpper() == "ECHO")
+
+                else if (req.Command == "ECHO")
                 {
                     string echoVal = req.Arguments[0];
                     string response = $"${echoVal.Length}\r\n{echoVal}\r\n";
                     client.Send(Encoding.UTF8.GetBytes(response));
                 }
-                // Console.WriteLine($"command is {req.Command}");
+
+                else if (req.Command == "SET")
+                {
+                    store[req.Arguments[0]] = req.Arguments[1];
+                    string response = $"+OK\r\n";
+                    client.Send(Encoding.UTF8.GetBytes(response));
+                }
+
+                else if (req.Command == "GET")
+                {
+                    string key = req.Arguments[0];
+
+                    if (store.TryGetValue(key, out string? value))
+                    {
+                        string response = $"${value.Length}\r\n{value}\r\n";
+                        client.Send(Encoding.UTF8.GetBytes(response));
+                    }
+
+                    else
+                    {
+                        client.Send(Encoding.UTF8.GetBytes("$-1\r\n"));
+                    }
+                }
             }
+            
             catch (SocketException)
             {
                 break;
