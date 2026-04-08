@@ -22,6 +22,14 @@ public class ConcurrentDictionaryStore
         return (string)storedValue.Value;
     }
 
+    public List<string>? GetList(string key)
+    {
+        if (!TryGetValidEntry(key, out var storedValue)) return null;
+        if (storedValue.Type != DataType.List) return null;
+        
+        return (List<string>)storedValue.Value;
+    }
+
     public int AddToList(string key, IEnumerable<string> value)
     {
         var entry = _data.GetOrAdd(key, _ => new StoredValue 

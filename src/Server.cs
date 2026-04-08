@@ -61,7 +61,9 @@ string ProcessRequest(RedisRequest req, ConcurrentDictionaryStore store)
 
         "GET" => HandleGet(req, store),
         
-        "RPUSH" => HandleRpush(req, store),
+        "RPUSH" => HandleRPush(req, store),
+        
+        "LRANGE" => HandleLRange(req, store),
 
         _ => "-ERR unknown command\r\n"
     };
@@ -99,15 +101,38 @@ string HandleGet(RedisRequest req, ConcurrentDictionaryStore store)
     return value == null ? "$-1\r\n" : $"${value.Length}\r\n{value}\r\n";
 }
 
-string HandleRpush(RedisRequest req, ConcurrentDictionaryStore store)
+string HandleRPush(RedisRequest req, ConcurrentDictionaryStore store)
 {
     if (req.Arguments.Count < 2) return "-ERR wrong number of arguments\r\n";
 
     var key = req.Arguments[0];
     var values = req.Arguments.Skip(1).ToList();
-    
-    int count = store.AddToList(key, values);
+    var count = store.AddToList(key, values);
 
     return $":{count}\r\n";
+}
 
+string HandleLRange(RedisRequest req, ConcurrentDictionaryStore store)
+{
+    if (req.Arguments.Count < 3) return "-ERR wrong number of arguments\r\n";
+
+    var key = req.Arguments[0];
+    if (!int.TryParse(req.Arguments[1], out var firstIndex) ||
+            !int.TryParse(req.Arguments[2], out var lastIndex))
+        return "-ERR value is not an integer or out of range\\r\\n\r\n";
+
+    var values = store.GetList(key);
+    if (values is null) return "*0\r\n";
+
+    values = values.Skip(firstIndex).Take(lastIndex - firstIndex + 1).ToList();
+    
+    var sb = new StringBuilder();
+    sb.Append($"*{values.Count}\r\n");
+
+    foreach (var v in values)
+    {
+        sb.Append($"${v.Length}\r\n{v}\r\n");
+    }
+
+    return sb.ToString();
 }
