@@ -1,5 +1,7 @@
 using System.Text;
 
+namespace codecrafters_redis.Protocol;
+
 public class RedisRequest
 {
     public string Command {get; private set;} = string.Empty;
