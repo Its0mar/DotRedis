@@ -22,7 +22,7 @@ public class ConcurrentDictionaryStore
         return (string)storedValue.Value;
     }
 
-    public int AddToList(string key, string value)
+    public int AddToList(string key, IEnumerable<string> value)
     {
         var entry = _data.GetOrAdd(key, _ => new StoredValue 
         { 
@@ -37,7 +37,7 @@ public class ConcurrentDictionaryStore
         
         lock (list) 
         {
-            list.Add(value);
+            list.AddRange(value);
             return list.Count;
         }
     }

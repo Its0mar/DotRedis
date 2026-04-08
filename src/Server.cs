@@ -7,7 +7,7 @@ using codecrafters_redis.Services;
 Console.WriteLine("Logs from your program will appear here!");
 
 ConcurrentDictionaryStore concurrentDictionaryStore = new();
-ListStore listStore = new();
+
 
 TcpListener server = new TcpListener(IPAddress.Any, 6379);
 server.Start();
@@ -32,7 +32,7 @@ void HandleSocket(Socket client)
                 if (bytesRead == 0) break;
 
                 var req = new RedisRequest(buffer, bytesRead);
-                var response = ProcessRequest(req, concurrentDictionaryStore, listStore);
+                var response = ProcessRequest(req, concurrentDictionaryStore);
                
                 if (!string.IsNullOrEmpty(response))
                     client.Send(Encoding.UTF8.GetBytes(response));
@@ -47,7 +47,7 @@ void HandleSocket(Socket client)
     }
 }
 
-string ProcessRequest(RedisRequest req, ConcurrentDictionaryStore store, ListStore ltStore)
+string ProcessRequest(RedisRequest req, ConcurrentDictionaryStore store)
 {
     return req.Command switch
     {
@@ -61,7 +61,7 @@ string ProcessRequest(RedisRequest req, ConcurrentDictionaryStore store, ListSto
 
         "GET" => HandleGet(req, store),
         
-        "RPUSH" => HandleRpush(req, ltStore),
+        "RPUSH" => HandleRpush(req, store),
 
         _ => "-ERR unknown command\r\n"
     };
@@ -99,14 +99,14 @@ string HandleGet(RedisRequest req, ConcurrentDictionaryStore store)
     return value == null ? "$-1\r\n" : $"${value.Length}\r\n{value}\r\n";
 }
 
-string HandleRpush(RedisRequest req, ListStore store)
+string HandleRpush(RedisRequest req, ConcurrentDictionaryStore store)
 {
     if (req.Arguments.Count < 2) return "-ERR wrong number of arguments\r\n";
 
     var key = req.Arguments[0];
-    var value = req.Arguments[1];
-
-    int count = store.AddToList(key, value);
+    var values = req.Arguments.Skip(1).ToList();
+    
+    int count = store.AddToList(key, values);
 
     return $":{count}\r\n";
 
