@@ -17,4 +17,6 @@ public static class RespCommands
         => Commands.LPush.Execute(args, arrays);
     public static RespObject LRange(Span<RespObject> args, Dictionary<BulkString, RedisEntry> arrays)
         => Commands.LRange.Execute(args, arrays);
+    public static RespObject LLen(Span<RespObject> args, Dictionary<BulkString, RedisEntry> arrays)
+        => Commands.LLen.Execute(args, arrays);
 }

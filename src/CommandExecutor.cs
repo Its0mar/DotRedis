@@ -26,6 +26,7 @@ public class CommandExecutor
             "RPUSH" => RespCommands.RPush(commandArgs, _database.Storage),
             "LPUSH" => RespCommands.LPush(commandArgs, _database.Storage),
             "LRANGE" => RespCommands.LRange(commandArgs, _database.Storage),
+            "LLEN" => RespCommands.LLen(commandArgs, _database.Storage),
             _ => new SimpleError("ERR Unknown command"u8.ToArray())
         };
     }
