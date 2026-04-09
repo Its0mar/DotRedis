@@ -7,11 +7,11 @@ public static class CommandParser
 {
     private const int TerminatorLength = 2;
     
-    public static bool TryParseCommand(byte[] command, out RESPArray? result)
+    public static bool TryParseCommand(byte[] command, out RespArray? result)
     {
         Span<byte> span = command.AsSpan();
         int elementStartIndex = 0;
-        if (!TryParseArray(span, ref elementStartIndex, out RESPArray array))
+        if (!TryParseArray(span, ref elementStartIndex, out RespArray array))
         {
             result = null;
             return false;
@@ -98,7 +98,7 @@ public static class CommandParser
         return true;
     }
     
-    private static bool TryParseArray(Span<byte> element, ref int elementStartIndex, out RESPArray array)
+    private static bool TryParseArray(Span<byte> element, ref int elementStartIndex, out RespArray array)
     {
         char firstSymbol = (char)element[elementStartIndex];
         
@@ -109,7 +109,7 @@ public static class CommandParser
         int numOfElements = int.Parse(Encoding.UTF8.GetString(element.Slice(elementStartIndex + 1, nextTerminatorIndex - elementStartIndex - 1)));
         int nextElementStartIndex = nextTerminatorIndex + TerminatorLength;
         
-        array = new RESPArray(new RespObject[numOfElements]);
+        array = new RespArray(new RespObject[numOfElements]);
         for (int i = 0; i < numOfElements; i++)
         {
             if (!TryParseElement(element, ref nextElementStartIndex, out RespObject? respObject))

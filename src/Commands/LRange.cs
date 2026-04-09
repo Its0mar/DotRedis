@@ -16,29 +16,34 @@ public static class LRange
             return new SimpleError("ERR value is not an integer"u8.ToArray());
         
         if (!storage.TryGetValue(keyString, out var redisEntry))
-            return new RESPArray([]);
-        
-        if (redisEntry.Value is not RESPArray list)
-            return new RESPArray([]);
-        
-        if (redisEntry.Expiration.HasValue && redisEntry.Expiration.Value < DateTime.UtcNow)
+            return new RespArray([]);
+
+        int listSize = 0;
+        IEnumerable<RespObject> collection;
+
+        if (redisEntry.Value is RespList respList)
         {
-            storage.Remove(keyString);
-            return new RESPArray([]);
+            listSize = respList.Items.Count;
+            collection = respList.Items;
+        }
+        else if (redisEntry.Value is RespArray respArray)
+        {
+            listSize = respArray.Objects.Length;
+            collection = respArray.Objects;
+        }
+        else
+        {
+            return new SimpleError("WRONGTYPE Operation against a key holding the wrong kind of value"u8.ToArray());
         }
 
-        var listSize = list.Objects.Length;
-        
         start = start >= 0 ? start : Math.Max(0, listSize + start);
         end = end >= 0 ? Math.Min(end, listSize - 1) : Math.Max(0, listSize + end);
-        
-        if (start > end || start >= listSize|| start < 0)
-            return new RESPArray([]);
-        
-        var result = new RespObject[end - start + 1];
-        for (int i = start; i <= end; i++)
-            result[i - start] = list[i];
-        
-        return new RESPArray(result);
+
+        if (start > end || start >= listSize || start < 0)
+            return new RespArray([]);
+
+        var result = collection.Skip(start).Take(end - start + 1).ToArray();
+    
+        return new RespArray(result);
     }
 }

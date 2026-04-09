@@ -13,6 +13,8 @@ public static class RespCommands
         => Commands.Get.Execute(args, variables);
     public static RespObject RPush(Span<RespObject> args, Dictionary<BulkString, RedisEntry> arrays)
         => Commands.RPush.Execute(args, arrays);
+    public static RespObject LPush(Span<RespObject> args, Dictionary<BulkString, RedisEntry> arrays)
+        => Commands.LPush.Execute(args, arrays);
     public static RespObject LRange(Span<RespObject> args, Dictionary<BulkString, RedisEntry> arrays)
         => Commands.LRange.Execute(args, arrays);
 }

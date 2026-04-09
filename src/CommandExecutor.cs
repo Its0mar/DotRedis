@@ -8,7 +8,7 @@ public class CommandExecutor
 {
     private readonly RedisDatabase _database = new RedisDatabase();
     
-    public RespObject Execute(RESPArray? array)
+    public RespObject Execute(RespArray? array)
     {
         if (array == null || array.Objects.Length == 0)
             return new SimpleError("ERR Null or empty command array"u8.ToArray());
@@ -24,6 +24,7 @@ public class CommandExecutor
             "SET" => RespCommands.Set(commandArgs, _database.Storage),
             "GET" => RespCommands.Get(commandArgs, _database.Storage),
             "RPUSH" => RespCommands.RPush(commandArgs, _database.Storage),
+            "LPUSH" => RespCommands.LPush(commandArgs, _database.Storage),
             "LRANGE" => RespCommands.LRange(commandArgs, _database.Storage),
             _ => new SimpleError("ERR Unknown command"u8.ToArray())
         };

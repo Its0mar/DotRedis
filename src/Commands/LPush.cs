@@ -1,39 +1,36 @@
 using codecrafters_redis.Models;
-using RedisEntry = codecrafters_redis.RedisDatabase.RedisEntry;
 
 namespace codecrafters_redis.Commands;
 
-public static class RPush
+public static class LPush
 {
-    public static RespObject Execute(Span<RespObject> args, Dictionary<BulkString, RedisEntry> storage)
+    public static RespObject Execute(Span<RespObject> args, Dictionary<BulkString, RedisDatabase.RedisEntry> storage)
     {
         if (args.Length < 2 || args[0] is not BulkString key)
             return new SimpleError("ERR Incorrect arguments"u8.ToArray());
-        
-        List<RespObject> list;
+
+        LinkedList<RespObject> list;
 
         if (storage.TryGetValue(key, out var entry))
         {
-            if (entry.Value is not RespArray respArray)
+            if (entry.Value is not RespList respList)
             {
                 return new SimpleError("WRONGTYPE Operation against a key holding the wrong kind of value"u8.ToArray());
             }
-            list = respArray.Objects.ToList(); 
+            list = respList.Items;
         }
         else
         {
-            list = new List<RespObject>();
+            list = [];
         }
 
         foreach (var item in args[1..])
         {
-            list.Add(item);
+            list.AddFirst(item);
         }
 
-        var updatedArray = new RespArray(list.ToArray());
-        storage[key] = new RedisEntry(updatedArray, null);
-
+        var redisEntry = new RespList(list);
+        storage[key] = new RedisDatabase.RedisEntry(redisEntry, null);
         return new Integer(list.Count);
     }
-
 }

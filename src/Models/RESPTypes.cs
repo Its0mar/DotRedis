@@ -71,7 +71,7 @@ public class BulkString(byte[] value, long length) : RespObject
     }
 }
 
-public class RESPArray(RespObject[] objects) : RespObject
+public class RespArray(RespObject[] objects) : RespObject
 {
     public RespObject[] Objects => objects;
     public RespObject this[int index] => Objects[index];
@@ -90,5 +90,15 @@ public class RESPArray(RespObject[] objects) : RespObject
         }
         
         return bytes.ToArray();
+    }
+}
+
+public class RespList(LinkedList<RespObject> items) : RespObject
+{
+    public LinkedList<RespObject> Items => items;
+    public override byte[] EncodeToBytes()
+    {
+        var array = new RespArray(Items.ToArray());
+        return array.EncodeToBytes();
     }
 }
