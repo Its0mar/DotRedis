@@ -45,7 +45,7 @@ public class Server
                 await command.WriteAsync(buffer.AsMemory(0, bytesRead));
                 if (CommandParser.TryParseCommand(command.GetBuffer(), out var array))
                 {
-                    var result = _commandExecutor.Execute(array);
+                    var result =await _commandExecutor.ExecuteAsync(array);
                     await stream.WriteAsync(result.EncodeToBytes());
                     command.SetLength(0);
                 }

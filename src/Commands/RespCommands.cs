@@ -1,4 +1,5 @@
 using codecrafters_redis.Models;
+using codecrafters_redis.Services;
 using RedisEntry = codecrafters_redis.RedisDatabase.RedisEntry;
 
 namespace codecrafters_redis.Commands;
@@ -11,8 +12,8 @@ public static class RespCommands
         => Commands.Set.Execute(args, variables);
     public static RespObject Get(Span<RespObject> args, Dictionary<BulkString, RedisEntry> variables) 
         => Commands.Get.Execute(args, variables);
-    public static RespObject RPush(Span<RespObject> args, Dictionary<BulkString, RedisEntry> arrays)
-        => Commands.RPush.Execute(args, arrays);
+    public static RespObject RPush(Span<RespObject> args, Dictionary<BulkString, RedisEntry> arrays, BlockingManager  blockingManager)
+        => Commands.RPush.Execute(args, arrays, blockingManager);
     public static RespObject LPush(Span<RespObject> args, Dictionary<BulkString, RedisEntry> arrays)
         => Commands.LPush.Execute(args, arrays);
     public static RespObject LRange(Span<RespObject> args, Dictionary<BulkString, RedisEntry> arrays)

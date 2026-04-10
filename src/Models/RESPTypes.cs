@@ -69,6 +69,7 @@ public class BulkString(byte[] value, long length) : RespObject
             return hash;
         }
     }
+    public override string ToString() => Encoding.UTF8.GetString(Value);
 }
 
 public class RespArray(RespObject[] objects) : RespObject
@@ -89,6 +90,8 @@ public class RespArray(RespObject[] objects) : RespObject
         
         return bytes.ToArray();
     }
+    public static RespArray Null =>  new RespArray([]);
+    
     
 
 }
