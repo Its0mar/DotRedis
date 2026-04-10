@@ -94,9 +94,9 @@ public class RespArray(RespObject[] objects) : RespObject
 public class RespList(LinkedList<RespObject> items) : RespObject
 {
     public LinkedList<RespObject> Items => items;
-    public bool IsNil { get; }
+    public bool IsNil { get; set; }
     
-    public static RespList Nil { get; } = new RespList(new LinkedList<RespObject>());
+    public static RespList Nil { get; } = new RespList(new LinkedList<RespObject>()){IsNil = true};
     
     public override byte[] EncodeToBytes()
     {
