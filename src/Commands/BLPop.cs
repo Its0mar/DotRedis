@@ -30,7 +30,7 @@ public static class BLPop
         {
             var delayTask = Task.Delay(TimeSpan.FromSeconds(timeoutSeconds));
             var completedTask = await Task.WhenAny(waiterTask, delayTask);
-            if (completedTask == delayTask)
+            if (completedTask == delayTask && !waiterTask.IsCompleted)
             {
                 // Timeout reached
                 return RespList.Nil;
