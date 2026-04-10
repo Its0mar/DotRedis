@@ -20,21 +20,25 @@ public class CommandExecutor
         if (allArgs[0] is not BulkString bulkString)
             return new SimpleError("ERR Incorrect command array"u8.ToArray());
 
-        var commandArgs = allArgs;
+        var args = allArgs.AsSpan();
         string command = Encoding.UTF8.GetString(bulkString.Value).ToUpper();
         
         Task<RespObject> task = command switch
         {
-            "PING"  => Task.FromResult<RespObject>(Ping.Execute()),
-            "GET"   => Task.FromResult(Get.Execute(commandArgs.AsSpan()[1..], _database.Storage)),
-            "SET"   => Task.FromResult(Set.Execute(commandArgs.AsSpan()[1..], _database.Storage)),
-    
-            "RPUSH" => Task.FromResult(RPush.Execute(commandArgs.AsSpan()[1..], _database.Storage, _blockingManager)),
-            "LPUSH" => Task.FromResult(LPush.Execute(commandArgs.AsSpan()[1..], _database.Storage)),
+            // Use RespCommands proxy methods
+            "PING"   => Task.FromResult<RespObject>(RespCommands.Ping()),
+            "ECHO"   => Task.FromResult(RespCommands.Echo(args[1..])),
+            "GET"    => Task.FromResult(RespCommands.Get(args[1..], _database.Storage)),
+            "SET"    => Task.FromResult(RespCommands.Set(args[1..], _database.Storage)),
+            
+            "RPUSH"  => Task.FromResult(RespCommands.RPush(args[1..], _database.Storage, _blockingManager)),
+            "LPUSH"  => Task.FromResult(RespCommands.LPush(args[1..], _database.Storage)),
+            
+            "LRANGE" => Task.FromResult(RespCommands.LRange(args[1..], _database.Storage)),
+            "LLEN"   => Task.FromResult(RespCommands.LLen(args[1..], _database.Storage)),
+            "LPOP"   => Task.FromResult(RespCommands.LPop(args[1..], _database.Storage)),
 
-            "LPOP"  => Task.FromResult(LPop.Execute(commandArgs.AsSpan()[1..], _database.Storage)),
-
-            "BLPOP" => BLPop.ExecuteAsync(commandArgs[1..], _database.Storage, _blockingManager),
+            "BLPOP"  => BLPop.ExecuteAsync(allArgs[1..], _database.Storage, _blockingManager),
 
             _ => Task.FromResult<RespObject>(new SimpleError("ERR Unknown command"u8.ToArray()))
         };
