@@ -13,9 +13,9 @@ public static class BLPop
         
         var keyBs = (BulkString)args[0];
         var timeoutBs = (BulkString)args[^1];
-        int.TryParse(Encoding.UTF8.GetString(timeoutBs.Value), out int timeoutSeconds);
+        double.TryParse(Encoding.UTF8.GetString(timeoutBs.Value), out double timeoutSeconds);
 
-        if (storage.TryGetValue(keyBs, out var entry) && entry.Value is RespList respList && respList.Items.Count > 0)
+        if (storage.TryGetValue(keyBs, out var entry) && entry.Value is RespList { Items.Count: > 0 } respList)
         {
             var item = respList.Items.First!.Value;
             respList.Items.RemoveFirst();
