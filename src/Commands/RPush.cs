@@ -13,22 +13,25 @@ public static class RPush
     {
         if (args.Length < 2 || args[0] is not BulkString key)
             return new SimpleError("ERR Incorrect arguments"u8.ToArray());
-    
+        
         string keyString = key.ToString();
-        RespList? list = null; 
+    
+        int added = 0;
+        
+        foreach (var item in args[1..]) 
+        {
+            if (blockingManager.ResolveWaiter(keyString, item)) 
+            {
+                added++;
+                continue; 
+            }
 
-        foreach (var item in args[1..]) {
-            if (blockingManager.ResolveWaiter(keyString, item)) continue;
-
-            list ??= GetOrCreateList(key, storage);
+            var list = GetOrCreateList(key, storage); 
             list.Items.AddLast(item);
+
         }
 
-        if (list != null && list.Items.Count == 0) {
-            storage.Remove(key); 
-        }
-
-        return new Integer(GetListLength(key, storage));
+        return new Integer(GetListLength(key, storage) + added);
     }
     
     private static RespList GetOrCreateList(BulkString key, Dictionary<BulkString, RedisDatabase.RedisEntry> storage)
