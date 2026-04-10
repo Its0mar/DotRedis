@@ -75,7 +75,6 @@ public class BulkString(byte[] value, long length) : RespObject
 public class RespArray(RespObject[] objects) : RespObject
 {
     public RespObject[] Objects => objects;
-    public RespObject this[int index] => Objects[index];
     
     public override byte[] EncodeToBytes()
     {
@@ -90,17 +89,19 @@ public class RespArray(RespObject[] objects) : RespObject
         
         return bytes.ToArray();
     }
-    public static RespArray Null =>  new RespArray([]);
-    
-    
-
 }
 
 public class RespList(LinkedList<RespObject> items) : RespObject
 {
     public LinkedList<RespObject> Items => items;
+    public bool IsNil { get; }
+    
+    public static RespList Nil { get; } = new RespList(new LinkedList<RespObject>());
+    
     public override byte[] EncodeToBytes()
     {
+        if (IsNil) return "*-1\r\n"u8.ToArray();
+        
         var ms = new MemoryStream();
         
         RespTypesUtility.WriteRespHeader(ms, '*', Items.Count);

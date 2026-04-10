@@ -33,7 +33,7 @@ public static class BLPop
             if (completedTask == delayTask)
             {
                 // Timeout reached
-                return RespArray.Null; 
+                return RespList.Nil;
             }
         }
         var poppedItem = await waiterTask;
