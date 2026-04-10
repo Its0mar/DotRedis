@@ -80,9 +80,7 @@ public class RespArray(RespObject[] objects) : RespObject
     {
         var bytes = new MemoryStream();
         
-        bytes.Write("*"u8.ToArray());
-        bytes.Write(Encoding.UTF8.GetBytes(Objects.Length.ToString()));
-        bytes.Write("\r\n"u8.ToArray());
+        RespTypesUtility.WriteRespHeader(bytes, '*', Objects.Length);
 
         foreach (var respObj in  Objects)
         {
@@ -91,6 +89,8 @@ public class RespArray(RespObject[] objects) : RespObject
         
         return bytes.ToArray();
     }
+    
+
 }
 
 public class RespList(LinkedList<RespObject> items) : RespObject
@@ -98,7 +98,24 @@ public class RespList(LinkedList<RespObject> items) : RespObject
     public LinkedList<RespObject> Items => items;
     public override byte[] EncodeToBytes()
     {
-        var array = new RespArray(Items.ToArray());
-        return array.EncodeToBytes();
+        var ms = new MemoryStream();
+        
+        RespTypesUtility.WriteRespHeader(ms, '*', Items.Count);
+        
+        foreach (var item in Items)
+        {
+            ms.Write(item.EncodeToBytes());
+        }
+
+        return ms.ToArray();
+    }
+}
+
+public static class RespTypesUtility {
+    public static void WriteRespHeader(MemoryStream ms, char prefix, int count)
+    {
+        ms.WriteByte((byte)prefix);
+        ms.Write(Encoding.UTF8.GetBytes(count.ToString()));
+        ms.Write("\r\n"u8);
     }
 }

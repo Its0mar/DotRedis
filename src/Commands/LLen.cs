@@ -2,7 +2,7 @@ using codecrafters_redis.Models;
 
 namespace codecrafters_redis.Commands;
 
-public class LLen
+public static class LLen
 {
     public static RespObject Execute(Span<RespObject> args, Dictionary<BulkString, RedisDatabase.RedisEntry> storage)
     {
@@ -17,9 +17,6 @@ public class LLen
             storage.Remove(key);
             return new Integer(0);
         }
-        
-        if (entry.Value is RespArray array) 
-            return new Integer(array.Objects.Length);
         
         if (entry.Value is RespList list)
             return new Integer(list.Items.Count);

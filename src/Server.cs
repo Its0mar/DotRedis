@@ -43,7 +43,7 @@ public class Server
                     break;
                 Console.Write(Encoding.UTF8.GetString(buffer, 0, bytesRead));
                 await command.WriteAsync(buffer.AsMemory(0, bytesRead));
-                if (CommandParser.TryParseCommand(command.GetBuffer(), out RespArray? array))
+                if (CommandParser.TryParseCommand(command.GetBuffer(), out var array))
                 {
                     var result = _commandExecutor.Execute(array);
                     await stream.WriteAsync(result.EncodeToBytes());

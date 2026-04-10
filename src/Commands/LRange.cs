@@ -18,31 +18,26 @@ public static class LRange
         if (!storage.TryGetValue(keyString, out var redisEntry))
             return new RespArray([]);
 
-        int listSize = 0;
-        IEnumerable<RespObject> collection;
+        if (redisEntry.Expiration.HasValue && redisEntry.Expiration.Value < DateTime.UtcNow)
+        {
+            storage.Remove(keyString);
+            return new RespArray([]);
+        }
 
-        if (redisEntry.Value is RespList respList)
-        {
-            listSize = respList.Items.Count;
-            collection = respList.Items;
-        }
-        else if (redisEntry.Value is RespArray respArray)
-        {
-            listSize = respArray.Objects.Length;
-            collection = respArray.Objects;
-        }
-        else
+        if (redisEntry.Value is not RespList respList)
         {
             return new SimpleError("WRONGTYPE Operation against a key holding the wrong kind of value"u8.ToArray());
         }
 
+        var listSize = respList.Items.Count;
+        
         start = start >= 0 ? start : Math.Max(0, listSize + start);
         end = end >= 0 ? Math.Min(end, listSize - 1) : Math.Max(0, listSize + end);
 
         if (start > end || start >= listSize || start < 0)
             return new RespArray([]);
 
-        var result = collection.Skip(start).Take(end - start + 1).ToArray();
+        var result = respList.Items.Skip(start).Take(end - start + 1).ToArray();
     
         return new RespArray(result);
     }

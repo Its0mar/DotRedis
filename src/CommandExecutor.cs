@@ -8,15 +8,18 @@ public class CommandExecutor
 {
     private readonly RedisDatabase _database = new RedisDatabase();
     
-    public RespObject Execute(RespArray? array)
+    public RespObject Execute(RespList? list)
     {
-        if (array == null || array.Objects.Length == 0)
+        if (list == null || list.Items.Count == 0)
             return new SimpleError("ERR Null or empty command array"u8.ToArray());
+        
+        var allArgs = list.Items.ToArray().AsSpan();
 
-        if (array.Objects[0] is not BulkString bulkString)
+        if (allArgs[0] is not BulkString bulkString)
             return new SimpleError("ERR Incorrect command array"u8.ToArray());
 
-        var commandArgs = array.Objects.AsSpan()[1..];
+        var commandArgs = allArgs[1..];
+        
         return Encoding.UTF8.GetString(bulkString.Value).ToUpper() switch
         {
             "PING" => RespCommands.Ping(),
@@ -27,6 +30,7 @@ public class CommandExecutor
             "LPUSH" => RespCommands.LPush(commandArgs, _database.Storage),
             "LRANGE" => RespCommands.LRange(commandArgs, _database.Storage),
             "LLEN" => RespCommands.LLen(commandArgs, _database.Storage),
+            "LPOP" => RespCommands.LPop(commandArgs, _database.Storage),
             _ => new SimpleError("ERR Unknown command"u8.ToArray())
         };
     }

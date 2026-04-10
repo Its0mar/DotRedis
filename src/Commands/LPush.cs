@@ -10,7 +10,6 @@ public static class LPush
             return new SimpleError("ERR Incorrect arguments"u8.ToArray());
 
         LinkedList<RespObject> list;
-
         if (storage.TryGetValue(key, out var entry))
         {
             if (entry.Value is not RespList respList)
@@ -22,6 +21,8 @@ public static class LPush
         else
         {
             list = [];
+            var respList = new RespList(list);
+            storage[key] = new RedisDatabase.RedisEntry(respList, null);
         }
 
         foreach (var item in args[1..])
@@ -29,8 +30,6 @@ public static class LPush
             list.AddFirst(item);
         }
 
-        var redisEntry = new RespList(list);
-        storage[key] = new RedisDatabase.RedisEntry(redisEntry, null);
         return new Integer(list.Count);
     }
 }

@@ -10,28 +10,25 @@ public static class RPush
         if (args.Length < 2 || args[0] is not BulkString key)
             return new SimpleError("ERR Incorrect arguments"u8.ToArray());
         
-        List<RespObject> list;
-
+        LinkedList<RespObject> list;
         if (storage.TryGetValue(key, out var entry))
         {
-            if (entry.Value is not RespArray respArray)
+            if (entry.Value is not RespList respList)
             {
                 return new SimpleError("WRONGTYPE Operation against a key holding the wrong kind of value"u8.ToArray());
             }
-            list = respArray.Objects.ToList(); 
+            list = respList.Items;
         }
         else
         {
-            list = new List<RespObject>();
+            list = new LinkedList<RespObject>();
+            storage[key] = new RedisEntry(new RespList(list), null);
         }
-
+        
         foreach (var item in args[1..])
         {
-            list.Add(item);
+            list.AddLast(item);
         }
-
-        var updatedArray = new RespArray(list.ToArray());
-        storage[key] = new RedisEntry(updatedArray, null);
 
         return new Integer(list.Count);
     }

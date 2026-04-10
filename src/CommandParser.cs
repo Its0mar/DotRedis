@@ -7,11 +7,11 @@ public static class CommandParser
 {
     private const int TerminatorLength = 2;
     
-    public static bool TryParseCommand(byte[] command, out RespArray? result)
+    public static bool TryParseCommand(byte[] command, out RespList? result)
     {
         Span<byte> span = command.AsSpan();
         int elementStartIndex = 0;
-        if (!TryParseArray(span, ref elementStartIndex, out RespArray array))
+        if (!TryParseArray(span, ref elementStartIndex, out RespList? array))
         {
             result = null;
             return false;
@@ -63,8 +63,9 @@ public static class CommandParser
             simpleError = null;
             return false;
         }
-        
+    
         simpleError = new SimpleError(element[(elementStartIndex + 1)..nextTerminatorIndex].ToArray());
+        elementStartIndex = nextTerminatorIndex + TerminatorLength; 
         return true;
     }
     
@@ -98,28 +99,34 @@ public static class CommandParser
         return true;
     }
     
-    private static bool TryParseArray(Span<byte> element, ref int elementStartIndex, out RespArray array)
+    private static bool TryParseArray(Span<byte> element, ref int elementStartIndex, out RespList? result)
     {
         char firstSymbol = (char)element[elementStartIndex];
-        
+    
         if (firstSymbol != '*')
             throw new Exception("Expected array");
 
         var nextTerminatorIndex = CommandParserUtils.FindNextTerminatorIndex(element, elementStartIndex);
         int numOfElements = int.Parse(Encoding.UTF8.GetString(element.Slice(elementStartIndex + 1, nextTerminatorIndex - elementStartIndex - 1)));
         int nextElementStartIndex = nextTerminatorIndex + TerminatorLength;
-        
-        array = new RespArray(new RespObject[numOfElements]);
+    
+        var list = new LinkedList<RespObject>();
+
         for (int i = 0; i < numOfElements; i++)
         {
             if (!TryParseElement(element, ref nextElementStartIndex, out RespObject? respObject))
+            {
+                result = null;
                 return false;
-            
-            if (respObject is not null) array.Objects[i] = respObject;
+            }
+        
+            if (respObject is not null) 
+                list.AddLast(respObject);
         }
             
-        
-        elementStartIndex = nextTerminatorIndex + TerminatorLength;
+        result = new RespList(list);
+        elementStartIndex = nextElementStartIndex; 
+    
         return true;
     }
 }
