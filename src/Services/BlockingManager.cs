@@ -16,6 +16,16 @@ public class BlockingManager
         
         return tcs.Task;
     }
+    
+    public void CancelWaiter(string key, Task<RespObject> waiterTask)
+    {
+        if (_waiters.TryGetValue(key, out var queue))
+        {
+            var remainingWaiters = queue.Where(t => t.Task != waiterTask).ToList();
+            
+            _waiters[key] = new ConcurrentQueue<TaskCompletionSource<RespObject>>(remainingWaiters);
+        }
+    }
 
     public bool ResolveWaiter(string key, RespObject value)
     {

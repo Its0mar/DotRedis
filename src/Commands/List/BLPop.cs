@@ -3,7 +3,7 @@ using codecrafters_redis.Core;
 using codecrafters_redis.Models;
 using codecrafters_redis.Services;
 
-namespace codecrafters_redis.Commands;
+namespace codecrafters_redis.Commands.List;
 
 public static class BLPop
 {
@@ -27,6 +27,13 @@ public static class BLPop
 
         var waiterTask = blockingManager.WaitForKey(keyBs.ToString());
 
+        // If data was pushed exactly while we were registering, ResolveWaiter might have missed us. Check storage one last time.
+        if (storage.TryGetValue(keyBs, out var itemAfterRegister) && itemAfterRegister.Value is RespList { Items.Count: > 0 })
+        {
+            blockingManager.CancelWaiter(keyBs.ToString(), waiterTask); 
+            return CreateBlpopResponse(keyBs, itemAfterRegister.Value);
+        }
+        
         if (timeoutSeconds > 0)
         {
             var delayTask = Task.Delay(TimeSpan.FromSeconds(timeoutSeconds));

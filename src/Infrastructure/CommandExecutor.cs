@@ -1,5 +1,6 @@
 using System.Text;
 using codecrafters_redis.Commands;
+using codecrafters_redis.Commands.List;
 using codecrafters_redis.Core;
 using codecrafters_redis.Models;
 using codecrafters_redis.Services;
