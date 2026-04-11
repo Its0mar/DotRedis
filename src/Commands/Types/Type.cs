@@ -26,6 +26,9 @@ public static class Type
         if (entry.Value is RespList)
             return new SimpleString("list"u8.ToArray());
         
+        if (entry.Value is RespStream)
+            return new SimpleString("list"u8.ToArray());
+        
         return new SimpleString("none"u8.ToArray());
     }
 }
