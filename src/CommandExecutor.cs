@@ -2,6 +2,7 @@ using System.Text;
 using codecrafters_redis.Commands;
 using codecrafters_redis.Models;
 using codecrafters_redis.Services;
+using Type = codecrafters_redis.Commands.Type;
 
 namespace codecrafters_redis;
 
@@ -39,6 +40,8 @@ public class CommandExecutor
             "LPOP"   => Task.FromResult(RespCommands.LPop(args[1..], _database.Storage)),
 
             "BLPOP"  => BLPop.ExecuteAsync(allArgs[1..], _database.Storage, _blockingManager),
+            
+            "TYPE"  => Task.FromResult(RespCommands.Type(allArgs[1..], _database.Storage)),
 
             _ => Task.FromResult<RespObject>(new SimpleError("ERR Unknown command"u8.ToArray()))
         };

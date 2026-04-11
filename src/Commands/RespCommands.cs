@@ -22,4 +22,6 @@ public static class RespCommands
         => Commands.LLen.Execute(args, arrays);
     public static RespObject LPop(Span<RespObject> args, Dictionary<BulkString, RedisEntry> arrays)
         => Commands.LPop.Execute(args, arrays);
+    public static RespObject Type(Span<RespObject> args, Dictionary<BulkString, RedisEntry> arrays)
+        => Commands.Type.Execute(args, arrays);
 }
