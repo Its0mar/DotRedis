@@ -1,6 +1,7 @@
+using codecrafters_redis.Core;
 using codecrafters_redis.Models;
 using codecrafters_redis.Services;
-using RedisEntry = codecrafters_redis.RedisDatabase.RedisEntry;
+using RedisEntry = codecrafters_redis.Core.RedisDatabase.RedisEntry;
 
 namespace codecrafters_redis.Commands;
 

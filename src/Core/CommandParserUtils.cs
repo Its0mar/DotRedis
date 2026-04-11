@@ -1,4 +1,4 @@
-namespace codecrafters_redis;
+namespace codecrafters_redis.Core;
 
 public static class CommandParserUtils
 {

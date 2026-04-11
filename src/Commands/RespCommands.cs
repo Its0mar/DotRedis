@@ -1,6 +1,6 @@
 using codecrafters_redis.Models;
 using codecrafters_redis.Services;
-using RedisEntry = codecrafters_redis.RedisDatabase.RedisEntry;
+using RedisEntry = codecrafters_redis.Core.RedisDatabase.RedisEntry;
 
 namespace codecrafters_redis.Commands;
 
@@ -23,5 +23,7 @@ public static class RespCommands
     public static RespObject LPop(Span<RespObject> args, Dictionary<BulkString, RedisEntry> arrays)
         => Commands.LPop.Execute(args, arrays);
     public static RespObject Type(Span<RespObject> args, Dictionary<BulkString, RedisEntry> arrays)
-        => Commands.Type.Execute(args, arrays);
+        => Types.Type.Execute(args, arrays);
+    public static RespObject XAdd(Span<RespObject> args, Dictionary<BulkString, RedisEntry> arrays)
+        => Stream.XAdd.Execute(args, arrays);
 }

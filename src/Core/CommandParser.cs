@@ -1,7 +1,7 @@
 using System.Text;
 using codecrafters_redis.Models;
 
-namespace codecrafters_redis;
+namespace codecrafters_redis.Core;
 
 public static class CommandParser
 {

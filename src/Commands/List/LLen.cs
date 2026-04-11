@@ -1,3 +1,4 @@
+using codecrafters_redis.Core;
 using codecrafters_redis.Models;
 
 namespace codecrafters_redis.Commands;

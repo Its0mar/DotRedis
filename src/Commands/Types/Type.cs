@@ -1,7 +1,7 @@
-using System.Text;
+using codecrafters_redis.Core;
 using codecrafters_redis.Models;
 
-namespace codecrafters_redis.Commands;
+namespace codecrafters_redis.Commands.Types;
 
 public static class Type
 {

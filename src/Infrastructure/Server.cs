@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using codecrafters_redis.Core;
 using codecrafters_redis.Models;
 
 namespace codecrafters_redis;

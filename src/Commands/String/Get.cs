@@ -1,5 +1,5 @@
 using codecrafters_redis.Models;
-using RedisEntry = codecrafters_redis.RedisDatabase.RedisEntry;
+using RedisEntry = codecrafters_redis.Core.RedisDatabase.RedisEntry;
 
 namespace codecrafters_redis.Commands;
 
