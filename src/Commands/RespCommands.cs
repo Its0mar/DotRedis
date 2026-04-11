@@ -26,4 +26,6 @@ public static class RespCommands
         => Types.Type.Execute(args, arrays);
     public static RespObject XAdd(Span<RespObject> args, Dictionary<BulkString, RedisEntry> arrays)
         => Stream.XAdd.Execute(args, arrays);
+    
+    
 }
